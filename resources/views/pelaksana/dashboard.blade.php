@@ -13,10 +13,10 @@
                     <div class="space-y-4">
                         @forelse ($proyeks as $proyek)
                             <a href="{{ route('pelaksana.proyek.show', $proyek) }}"
-                                class="block p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition duration-150 ease-in-out">
+                                class="block p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
                                 <div class="flex justify-between items-center">
                                     <div>
-                                        <p class="font-semibold text-lg">{{ $proyek->nama_proyek }}</p>
+                                        <p class="font-semibold">{{ $proyek->nama_proyek }}</p>
                                         <p class="text-sm text-gray-600 dark:text-gray-400">{{ $proyek->lokasi }}</p>
                                     </div>
                                     <span

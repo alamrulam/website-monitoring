@@ -9,6 +9,7 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
+
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
@@ -17,7 +18,6 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            // TAMBAHKAN BARIS INI
             $table->string('role')->default('pelaksana'); // 'admin' atau 'pelaksana'
             $table->rememberToken();
             $table->timestamps();

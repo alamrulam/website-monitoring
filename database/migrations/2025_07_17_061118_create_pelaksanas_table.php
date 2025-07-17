@@ -11,12 +11,21 @@ return new class extends Migration
     {
         Schema::create('pelaksanas', function (Blueprint $table) {
             $table->id();
-            // Relasi ke tabel users. Jika user dihapus, pelaksana juga terhapus.
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('nama_perusahaan');
             $table->string('nama_kontak');
             $table->string('telepon');
             $table->text('alamat');
+
+            // --- KOLOM TAMBAHAN DENGAN NAMA BARU ---
+            $table->string('nomor_kontrak')->nullable();
+            $table->date('tanggal_kontrak')->nullable();
+            $table->string('nama_bank')->nullable();
+            $table->string('nomor_rekening')->nullable();
+            $table->string('atas_nama_rekening')->nullable();
+            // $table->string('nomor_pajak')->nullable(); // <-- DIHAPUS
+            // ------------------------------------
+
             $table->timestamps();
         });
     }
