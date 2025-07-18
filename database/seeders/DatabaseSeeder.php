@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
         // Panggil seeder baru kita di sini
         $this->call([
             MasterKegiatanSeeder::class,
+            AdminUserSeeder::class,
         ]);
     }
 }
