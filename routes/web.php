@@ -52,8 +52,13 @@ Route::middleware(['auth'])->prefix('pelaksana')->name('pelaksana.')->group(func
     // Dashboard Pelaksana
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Route untuk Proyek yang dimiliki Pelaksana
+    // --- PERUBAHAN URUTAN DI SINI ---
+    // Route yang lebih spesifik (cetak-pdf) diletakkan di atas.
+    Route::get('proyek/{proyek}/cetak-pdf', [ProyekSayaController::class, 'cetakPdf'])->name('proyek.cetakPdf');
+
+    // Route yang lebih umum dengan parameter opsional diletakkan di bawah.
     Route::get('proyek/{proyek}/{tab?}', [ProyekSayaController::class, 'show'])->name('proyek.show');
+    // --------------------------------
 
     // Nested Resource untuk Tenaga Kerja di dalam Proyek
     Route::resource('proyek.tenaga-kerja', TenagaKerjaController::class)->except(['index', 'show']);
@@ -61,7 +66,6 @@ Route::middleware(['auth'])->prefix('pelaksana')->name('pelaksana.')->group(func
     // Nested Resource untuk Pembayaran di dalam Proyek
     Route::resource('proyek.pembayaran', PembayaranController::class)->except(['index', 'show']);
 
-    Route::get('proyek/{proyek}/cetak-pdf', [ProyekSayaController::class, 'cetakPdf'])->name('proyek.cetakPdf');
     Route::resource('proyek.tenaga-kerja', TenagaKerjaController::class)->except(['index', 'show']);
     Route::resource('proyek.pembayaran', PembayaranController::class)->except(['index', 'show']);
 

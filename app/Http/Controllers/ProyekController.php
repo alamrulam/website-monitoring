@@ -6,7 +6,7 @@ use App\Models\Proyek;
 use App\Models\Pelaksana;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-
+use Barryvdh\DomPDF\Facade\Pdf;
 class ProyekController extends Controller
 {
     public function index()
@@ -118,5 +118,45 @@ class ProyekController extends Controller
     {
         $proyek->delete();
         return redirect()->route('admin.proyek.index')->with('success', 'Proyek berhasil dihapus.');
+    }
+    /**
+     * Menampilkan halaman detail proyek untuk monitoring oleh Admin.
+     * INI ADALAH METHOD BARU YANG MEMPERBAIKI ERROR.
+     */
+    public function show(Proyek $proyek)
+    {
+        // Load semua relasi yang dibutuhkan untuk ditampilkan di halaman detail
+        $proyek->load(['pelaksana', 'kegiatans', 'tenagaKerja', 'dokumentasiFotos', 'pembayaran' => function ($query) {
+            $query->orderBy('tanggal_transaksi', 'desc');
+        }]);
+
+        // Hitung total pengeluaran
+        $totalPengeluaran = $proyek->pembayaran()->where('jenis', 'Pengeluaran')->sum('jumlah');
+
+        // Hitung sisa anggaran
+        $sisaAnggaran = $proyek->anggaran - $totalPengeluaran;
+
+        // Kirim semua data ke view
+        return view('admin.proyek.show', compact('proyek', 'totalPengeluaran', 'sisaAnggaran'));
+    }
+
+    /**
+     * Membuat laporan PDF untuk proyek dari sisi Admin.
+     * INI ADALAH METHOD BARU.
+     */
+    public function cetakPdf(Proyek $proyek)
+    {
+        // Load semua data yang dibutuhkan untuk laporan
+        $proyek->load(['pelaksana', 'pembayaran' => function ($query) {
+            $query->orderBy('tanggal_transaksi', 'asc');
+        }]);
+
+        $totalPengeluaran = $proyek->pembayaran()->where('jenis', 'Pengeluaran')->sum('jumlah');
+        $sisaAnggaran = $proyek->anggaran - $totalPengeluaran;
+
+        // Buat PDF menggunakan view yang sama dengan Pelaksana
+        $pdf = PDF::loadView('laporan.proyek-pdf', compact('proyek', 'totalPengeluaran', 'sisaAnggaran'));
+
+        return $pdf->stream('laporan-' . $proyek->nama_proyek . '.pdf');
     }
 }

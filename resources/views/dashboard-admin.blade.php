@@ -11,17 +11,20 @@
             <!-- Kartu Ringkasan -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                 <!-- Total Proyek -->
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
+                <div
+                    class="bg-white dark:bg-gray-900 overflow-hidden shadow-lg sm:rounded-lg p-6 border-l-4 border-indigo-500">
                     <p class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Proyek</p>
                     <p class="mt-1 text-3xl font-semibold text-gray-900 dark:text-gray-100">{{ $totalProyek }}</p>
                 </div>
                 <!-- Total Pelaksana -->
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
+                <div
+                    class="bg-white dark:bg-gray-900 overflow-hidden shadow-lg sm:rounded-lg p-6 border-l-4 border-green-500">
                     <p class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Pelaksana</p>
                     <p class="mt-1 text-3xl font-semibold text-gray-900 dark:text-gray-100">{{ $totalPelaksana }}</p>
                 </div>
                 <!-- Total Anggaran -->
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
+                <div
+                    class="bg-white dark:bg-gray-900 overflow-hidden shadow-lg sm:rounded-lg p-6 border-l-4 border-yellow-500">
                     <p class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Anggaran</p>
                     <p class="mt-1 text-3xl font-semibold text-gray-900 dark:text-gray-100">Rp
                         {{ number_format($totalAnggaran, 0, ',', '.') }}</p>
@@ -29,14 +32,9 @@
             </div>
 
             <!-- Grafik Proyek -->
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+            <div class="bg-white dark:bg-gray-900 overflow-hidden shadow-lg sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     <h3 class="text-lg font-medium mb-4">Statistik Status Proyek</h3>
-
-                    {{-- ====================================================== --}}
-                    {{-- PERUBAHAN DI SINI --}}
-                    {{-- Kita batasi lebar dan tinggi maksimum dari kontainer grafik --}}
-                    {{-- ====================================================== --}}
                     <div class="relative mx-auto" style="max-height:400px; max-width:400px;">
                         <canvas id="statusProyekChart"></canvas>
                     </div>
