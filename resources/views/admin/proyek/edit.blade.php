@@ -90,50 +90,31 @@
 
                         <hr class="my-6 border-gray-200 dark:border-gray-700">
 
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Detail Jenis Kegiatan</h3>
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Detail Pekerjaan Jalan
+                            Desa</h3>
 
                         <div class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-                            <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-                                <!-- Nama Kegiatan (DROPDOWN) -->
-                                <div class="md:col-span-4">
-                                    <x-input-label for="nama_kegiatan" value="Jenis Kegiatan" />
-                                    <select id="nama_kegiatan" name="nama_kegiatan"
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Uraian Pekerjaan (DROPDOWN) -->
+                                <div>
+                                    <x-input-label for="uraian" value="Uraian Pekerjaan" />
+                                    <select id="uraian" name="uraian"
                                         class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm"
                                         required>
-                                        <option value="">-- Pilih Kegiatan --</option>
-                                        @foreach ($masterKegiatans as $master)
-                                            <option value="{{ $master->nama_kegiatan }}"
-                                                {{ old('nama_kegiatan', $kegiatan->nama_kegiatan ?? '') == $master->nama_kegiatan ? 'selected' : '' }}>
-                                                {{ $master->nama_kegiatan }}
+                                        <option value="">-- Pilih Jenis Jalan --</option>
+                                        @foreach ($uraianOptions as $option)
+                                            <option value="{{ $option }}"
+                                                {{ old('uraian', $kegiatan->uraian ?? '') == $option ? 'selected' : '' }}>
+                                                {{ $option }}
                                             </option>
                                         @endforeach
                                     </select>
                                 </div>
-                                <!-- Uraian -->
-                                <div class="md:col-span-4">
-                                    <x-input-label for="uraian" value="Uraian (Opsional)" />
-                                    <x-text-input id="uraian" class="block mt-1 w-full" type="text" name="uraian"
-                                        :value="old('uraian', $kegiatan->uraian ?? '')" />
-                                </div>
-                                <!-- Volume -->
-                                <div class="md:col-span-2">
-                                    <x-input-label for="volume" value="Volume" />
+                                <!-- Volume / Panjang -->
+                                <div>
+                                    <x-input-label for="volume" value="Panjang Jalan (meter)" />
                                     <x-text-input id="volume" class="block mt-1 w-full" type="number" name="volume"
                                         :value="old('volume', $kegiatan->volume ?? '')" required step="0.01" />
-                                </div>
-                                <!-- Satuan (DROPDOWN) -->
-                                <div class="md:col-span-2">
-                                    <x-input-label for="satuan" value="Satuan" />
-                                    <select id="satuan" name="satuan"
-                                        class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm"
-                                        required>
-                                        @foreach ($satuans as $satuan)
-                                            <option value="{{ $satuan }}"
-                                                {{ old('satuan', $kegiatan->satuan ?? 'm2') == $satuan ? 'selected' : '' }}>
-                                                {{ $satuan }}
-                                            </option>
-                                        @endforeach
-                                    </select>
                                 </div>
                             </div>
                         </div>

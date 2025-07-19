@@ -9,29 +9,41 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class ProyekSayaController extends Controller
 {
-    public function show(Proyek $proyek, Request $request)
+    public function show(Proyek $proyek, Request $request, $tab = 'detail')
     {
         // Otorisasi: Pastikan proyek ini milik pelaksana yang sedang login
         if ($proyek->pelaksana_id !== $request->user()->pelaksana->id) {
             abort(403);
         }
 
-        // Load relasi
-        $proyek->load(['tenagaKerja', 'kegiatans', 'pembayaran' => function ($query) {
-            $query->orderBy('tanggal_transaksi', 'desc');
-        }]);
+        // Daftar tab yang valid
+        $validTabs = ['detail', 'progres', 'tenaga-kerja', 'pembayaran'];
+        if (!in_array($tab, $validTabs)) {
+            $tab = 'detail'; // Default ke tab detail jika tidak valid
+        }
 
-        // Hitung total pemasukan dan pengeluaran
-        $totalPemasukan = $proyek->pembayaran()->where('jenis', 'Pemasukan')->sum('jumlah');
+        // ======================================================
+        // PERBAIKAN LOGIKA DI SINI
+        // Kita muat semua relasi yang mungkin dibutuhkan secara langsung.
+        // Ini memastikan data selalu tersedia di setiap tab.
+        // ======================================================
+        $proyek->load([
+            'pelaksana',
+            'kegiatans',
+            'dokumentasiFotos',
+            'tenagaKerja', // <-- Memuat data tenaga kerja
+            'pembayaran' => function ($query) {
+                $query->orderBy('tanggal_transaksi', 'desc');
+            } // <-- Memuat data pembayaran
+        ]);
+
+        // Hitung ringkasan keuangan (selalu dibutuhkan)
         $totalPengeluaran = $proyek->pembayaran()->where('jenis', 'Pengeluaran')->sum('jumlah');
         $sisaAnggaran = $proyek->anggaran - $totalPengeluaran;
 
-
-        return view('pelaksana.proyek.show', compact('proyek', 'totalPemasukan', 'totalPengeluaran', 'sisaAnggaran'));
+        return view('pelaksana.proyek.show', compact('proyek', 'tab', 'totalPengeluaran', 'sisaAnggaran'));
     }
-    /**
-     * Membuat laporan PDF untuk proyek dari sisi Pelaksana.
-     */
+
     public function cetakPdf(Proyek $proyek, Request $request)
     {
         // Otorisasi
@@ -39,7 +51,7 @@ class ProyekSayaController extends Controller
             abort(403);
         }
 
-        // Load data yang dibutuhkan
+        // Load data yang dibutuhkan untuk PDF
         $proyek->load(['pelaksana', 'pembayaran' => function ($query) {
             $query->orderBy('tanggal_transaksi', 'asc');
         }]);

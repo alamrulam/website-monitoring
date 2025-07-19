@@ -4,10 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Proyek;
 use App\Models\Pelaksana;
-use App\Models\MasterKegiatan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Barryvdh\DomPDF\Facade\Pdf;
 
 class ProyekController extends Controller
 {
@@ -20,10 +18,10 @@ class ProyekController extends Controller
     public function create()
     {
         $pelaksanas = Pelaksana::orderBy('nama_perusahaan')->get();
-        $masterKegiatans = MasterKegiatan::orderBy('nama_kegiatan')->get();
-        $satuans = ['m', 'm2', 'm3', 'ls', 'unit', 'titik', 'bh'];
+        // Siapkan data untuk dropdown Uraian Pekerjaan
+        $uraianOptions = ['Jalan Tanah', 'Jalan Kerikil', 'Jalan Rabat Beton', 'Jalan Aspal Tipis'];
 
-        return view('admin.proyek.create', compact('pelaksanas', 'masterKegiatans', 'satuans'));
+        return view('admin.proyek.create', compact('pelaksanas', 'uraianOptions'));
     }
 
     public function store(Request $request)
@@ -35,11 +33,9 @@ class ProyekController extends Controller
             'anggaran' => 'required|numeric|min:0',
             'tanggal_mulai' => 'nullable|date',
             'tanggal_selesai' => 'nullable|date|after_or_equal:tanggal_mulai',
-            // Validasi untuk satu kegiatan
-            'nama_kegiatan' => 'required|string|max:255',
-            'uraian' => 'nullable|string',
+            // Validasi untuk detail pekerjaan jalan
+            'uraian' => 'required|string|in:Jalan Tanah,Jalan Kerikil,Jalan Rabat Beton,Jalan Aspal Tipis',
             'volume' => 'required|numeric|min:0',
-            'satuan' => 'required|string|max:50',
         ]);
 
         DB::transaction(function () use ($request) {
@@ -53,13 +49,13 @@ class ProyekController extends Controller
                 'tanggal_selesai'
             ]));
 
-            // Simpan satu detail kegiatan
-            $proyek->kegiatans()->create($request->only([
-                'nama_kegiatan',
-                'uraian',
-                'volume',
-                'satuan'
-            ]));
+            // Simpan detail kegiatan dengan data yang sudah ditetapkan
+            $proyek->kegiatans()->create([
+                'nama_kegiatan' => 'Jalan Desa', // Hardcoded
+                'uraian' => $request->uraian,
+                'volume' => $request->volume,
+                'satuan' => 'meter', // Hardcoded
+            ]);
         });
 
         return redirect()->route('admin.proyek.index')
@@ -68,15 +64,13 @@ class ProyekController extends Controller
 
     public function edit(Proyek $proyek)
     {
-        // Load relasi kegiatan. Kita ambil yang pertama karena sekarang hanya ada satu.
         $proyek->load('kegiatans');
         $kegiatan = $proyek->kegiatans->first();
-
         $pelaksanas = Pelaksana::orderBy('nama_perusahaan')->get();
-        $masterKegiatans = MasterKegiatan::orderBy('nama_kegiatan')->get();
-        $satuans = ['m', 'm2', 'm3', 'ls', 'unit', 'titik', 'bh'];
+        // Siapkan data untuk dropdown Uraian Pekerjaan
+        $uraianOptions = ['Jalan Tanah', 'Jalan Kerikil', 'Jalan Rabat Beton', 'Jalan Aspal Tipis'];
 
-        return view('admin.proyek.edit', compact('proyek', 'kegiatan', 'pelaksanas', 'masterKegiatans', 'satuans'));
+        return view('admin.proyek.edit', compact('proyek', 'kegiatan', 'pelaksanas', 'uraianOptions'));
     }
 
     public function update(Request $request, Proyek $proyek)
@@ -89,11 +83,9 @@ class ProyekController extends Controller
             'tanggal_mulai' => 'nullable|date',
             'tanggal_selesai' => 'nullable|date|after_or_equal:tanggal_mulai',
             'status' => 'required|in:Perencanaan,Berjalan,Selesai,Dibatalkan',
-            // Validasi untuk satu kegiatan
-            'nama_kegiatan' => 'required|string|max:255',
-            'uraian' => 'nullable|string',
+            // Validasi untuk detail pekerjaan jalan
+            'uraian' => 'required|string|in:Jalan Tanah,Jalan Kerikil,Jalan Rabat Beton,Jalan Aspal Tipis',
             'volume' => 'required|numeric|min:0',
-            'satuan' => 'required|string|max:50',
         ]);
 
         DB::transaction(function () use ($request, $proyek) {
@@ -108,14 +100,14 @@ class ProyekController extends Controller
                 'status'
             ]));
 
-            // Hapus kegiatan lama dan buat yang baru (cara paling simpel)
+            // Hapus kegiatan lama dan buat yang baru
             $proyek->kegiatans()->delete();
-            $proyek->kegiatans()->create($request->only([
-                'nama_kegiatan',
-                'uraian',
-                'volume',
-                'satuan'
-            ]));
+            $proyek->kegiatans()->create([
+                'nama_kegiatan' => 'Jalan Desa', // Hardcoded
+                'uraian' => $request->uraian,
+                'volume' => $request->volume,
+                'satuan' => 'meter', // Hardcoded
+            ]);
         });
 
         return redirect()->route('admin.proyek.index')
@@ -126,39 +118,5 @@ class ProyekController extends Controller
     {
         $proyek->delete();
         return redirect()->route('admin.proyek.index')->with('success', 'Proyek berhasil dihapus.');
-    }
-    public function show(Proyek $proyek)
-    {
-        // Load semua relasi yang dibutuhkan untuk ditampilkan di halaman detail
-        $proyek->load(['pelaksana', 'kegiatans', 'tenagaKerja', 'pembayaran' => function ($query) {
-            $query->orderBy('tanggal_transaksi', 'desc');
-        }]);
-
-        // Hitung total pengeluaran yang sudah dicatat oleh Pelaksana
-        $totalPengeluaran = $proyek->pembayaran()->where('jenis', 'Pengeluaran')->sum('jumlah');
-
-        // Hitung sisa anggaran
-        $sisaAnggaran = $proyek->anggaran - $totalPengeluaran;
-
-        // Kirim semua data ke view
-        return view('admin.proyek.show', compact('proyek', 'totalPengeluaran', 'sisaAnggaran'));
-    }
-    
-    public function cetakPdf(Proyek $proyek)
-    {
-        // Load semua data yang dibutuhkan untuk laporan
-        $proyek->load(['pelaksana', 'pembayaran' => function ($query) {
-            $query->orderBy('tanggal_transaksi', 'asc');
-        }]);
-
-        $totalPengeluaran = $proyek->pembayaran()->where('jenis', 'Pengeluaran')->sum('jumlah');
-        $sisaAnggaran = $proyek->anggaran - $totalPengeluaran;
-
-        // Buat PDF
-        $pdf = PDF::loadView('laporan.proyek-pdf', compact('proyek', 'totalPengeluaran', 'sisaAnggaran'));
-
-        // Tampilkan atau download PDF
-        // return $pdf->download('laporan-proyek-'.$proyek->id.'.pdf'); // Untuk langsung download
-        return $pdf->stream(); // Untuk menampilkan di browser
     }
 }

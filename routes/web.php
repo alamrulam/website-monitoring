@@ -53,7 +53,7 @@ Route::middleware(['auth'])->prefix('pelaksana')->name('pelaksana.')->group(func
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Route untuk Proyek yang dimiliki Pelaksana
-    Route::get('proyek/{proyek}', [ProyekSayaController::class, 'show'])->name('proyek.show');
+    Route::get('proyek/{proyek}/{tab?}', [ProyekSayaController::class, 'show'])->name('proyek.show');
 
     // Nested Resource untuk Tenaga Kerja di dalam Proyek
     Route::resource('proyek.tenaga-kerja', TenagaKerjaController::class)->except(['index', 'show']);
@@ -64,7 +64,7 @@ Route::middleware(['auth'])->prefix('pelaksana')->name('pelaksana.')->group(func
     Route::get('proyek/{proyek}/cetak-pdf', [ProyekSayaController::class, 'cetakPdf'])->name('proyek.cetakPdf');
     Route::resource('proyek.tenaga-kerja', TenagaKerjaController::class)->except(['index', 'show']);
     Route::resource('proyek.pembayaran', PembayaranController::class)->except(['index', 'show']);
-    
+
     Route::put('proyek/{proyek}/update-progres', [ProgresController::class, 'updateProgres'])->name('proyek.updateProgres');
     Route::post('proyek/{proyek}/upload-foto', [ProgresController::class, 'uploadFoto'])->name('proyek.uploadFoto');
     Route::delete('proyek/{proyek}/hapus-foto/{foto}', [ProgresController::class, 'hapusFoto'])->name('proyek.hapusFoto');

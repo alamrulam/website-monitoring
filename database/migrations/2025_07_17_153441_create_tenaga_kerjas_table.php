@@ -12,12 +12,18 @@ return new class extends Migration
             $table->id();
             $table->foreignId('proyek_id')->constrained()->onDelete('cascade');
             $table->string('nama_pekerja');
+
+            // --- KOLOM BARU SESUAI PERMINTAAN ---
+            $table->string('tempat_lahir');
+            $table->string('pendidikan');
+            $table->enum('jenis_kelamin', ['Laki-laki', 'Perempuan']);
+            // ------------------------------------
+
             $table->string('posisi'); // Contoh: Kepala Tukang, Pekerja, Mandor
             $table->string('telepon')->nullable();
             $table->timestamps();
         });
     }
-
     public function down(): void
     {
         Schema::dropIfExists('tenaga_kerjas');
