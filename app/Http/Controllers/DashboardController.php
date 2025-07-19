@@ -1,8 +1,12 @@
 <?php
 
+
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Proyek;
+use App\Models\Pelaksana;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -11,12 +15,32 @@ class DashboardController extends Controller
         $user = $request->user();
 
         if ($user->role === 'admin') {
-            // Arahkan ke route dashboard admin (misal: daftar proyek)
-            return redirect()->route('admin.proyek.index');
+            // --- LOGIKA BARU UNTUK DASHBOARD ADMIN ---
+            $totalProyek = Proyek::count();
+            $totalPelaksana = Pelaksana::count();
+            $totalAnggaran = Proyek::sum('anggaran');
+
+            // Query untuk mendapatkan data grafik
+            $statusCounts = Proyek::query()
+                ->select('status', DB::raw('count(*) as total'))
+                ->groupBy('status')
+                ->pluck('total', 'status');
+
+            // Siapkan data untuk Chart.js
+            $chartLabels = $statusCounts->keys();
+            $chartData = $statusCounts->values();
+
+            return view('dashboard-admin', compact(
+                'totalProyek',
+                'totalPelaksana',
+                'totalAnggaran',
+                'chartLabels',
+                'chartData'
+            ));
+            // ------------------------------------------
         }
 
         if ($user->role === 'pelaksana') {
-            // Arahkan ke route dashboard pelaksana
             return redirect()->route('pelaksana.dashboard');
         }
 

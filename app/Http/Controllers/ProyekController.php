@@ -7,6 +7,7 @@ use App\Models\Pelaksana;
 use App\Models\MasterKegiatan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class ProyekController extends Controller
 {
@@ -125,5 +126,39 @@ class ProyekController extends Controller
     {
         $proyek->delete();
         return redirect()->route('admin.proyek.index')->with('success', 'Proyek berhasil dihapus.');
+    }
+    public function show(Proyek $proyek)
+    {
+        // Load semua relasi yang dibutuhkan untuk ditampilkan di halaman detail
+        $proyek->load(['pelaksana', 'kegiatans', 'tenagaKerja', 'pembayaran' => function ($query) {
+            $query->orderBy('tanggal_transaksi', 'desc');
+        }]);
+
+        // Hitung total pengeluaran yang sudah dicatat oleh Pelaksana
+        $totalPengeluaran = $proyek->pembayaran()->where('jenis', 'Pengeluaran')->sum('jumlah');
+
+        // Hitung sisa anggaran
+        $sisaAnggaran = $proyek->anggaran - $totalPengeluaran;
+
+        // Kirim semua data ke view
+        return view('admin.proyek.show', compact('proyek', 'totalPengeluaran', 'sisaAnggaran'));
+    }
+    
+    public function cetakPdf(Proyek $proyek)
+    {
+        // Load semua data yang dibutuhkan untuk laporan
+        $proyek->load(['pelaksana', 'pembayaran' => function ($query) {
+            $query->orderBy('tanggal_transaksi', 'asc');
+        }]);
+
+        $totalPengeluaran = $proyek->pembayaran()->where('jenis', 'Pengeluaran')->sum('jumlah');
+        $sisaAnggaran = $proyek->anggaran - $totalPengeluaran;
+
+        // Buat PDF
+        $pdf = PDF::loadView('laporan.proyek-pdf', compact('proyek', 'totalPengeluaran', 'sisaAnggaran'));
+
+        // Tampilkan atau download PDF
+        // return $pdf->download('laporan-proyek-'.$proyek->id.'.pdf'); // Untuk langsung download
+        return $pdf->stream(); // Untuk menampilkan di browser
     }
 }

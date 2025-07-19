@@ -25,6 +25,7 @@ class Proyek extends Model
         'tanggal_mulai',
         'tanggal_selesai',
         'status',
+        'progres_fisik',
     ];
 
     /**
@@ -58,5 +59,12 @@ class Proyek extends Model
     public function pembayaran(): HasMany
     {
         return $this->hasMany(Pembayaran::class);
+    }
+    /**
+     * Satu Proyek bisa memiliki banyak Dokumentasi Foto.
+     */
+    public function dokumentasiFotos(): HasMany
+    {
+        return $this->hasMany(DokumentasiFoto::class);
     }
 }

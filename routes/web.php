@@ -10,6 +10,8 @@ use App\Http\Controllers\Pelaksana\ProyekSayaController;
 use App\Http\Controllers\Pelaksana\TenagaKerjaController;
 use App\Http\Controllers\Pelaksana\PembayaranController;
 use App\Http\Controllers\DashboardController as MainDashboardController; // Ganti nama alias
+use App\Http\Controllers\Pelaksana\ProgresController;
+
 // ---------------------------------
 use Illuminate\Support\Facades\Route;
 // ---------------------------------
@@ -29,6 +31,8 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', MainDashboardController::class)->middleware(['auth', 'verified'])->name('dashboard');
+
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -41,6 +45,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Route untuk CRUD Pelaksana
     Route::resource('pelaksana', PelaksanaController::class);
     Route::resource('proyek', ProyekController::class);
+    Route::get('proyek/{proyek}/cetak-pdf', [ProyekController::class, 'cetakPdf'])->name('proyek.cetakPdf');
 });
 
 Route::middleware(['auth'])->prefix('pelaksana')->name('pelaksana.')->group(function () {
@@ -55,4 +60,12 @@ Route::middleware(['auth'])->prefix('pelaksana')->name('pelaksana.')->group(func
 
     // Nested Resource untuk Pembayaran di dalam Proyek
     Route::resource('proyek.pembayaran', PembayaranController::class)->except(['index', 'show']);
+
+    Route::get('proyek/{proyek}/cetak-pdf', [ProyekSayaController::class, 'cetakPdf'])->name('proyek.cetakPdf');
+    Route::resource('proyek.tenaga-kerja', TenagaKerjaController::class)->except(['index', 'show']);
+    Route::resource('proyek.pembayaran', PembayaranController::class)->except(['index', 'show']);
+    
+    Route::put('proyek/{proyek}/update-progres', [ProgresController::class, 'updateProgres'])->name('proyek.updateProgres');
+    Route::post('proyek/{proyek}/upload-foto', [ProgresController::class, 'uploadFoto'])->name('proyek.uploadFoto');
+    Route::delete('proyek/{proyek}/hapus-foto/{foto}', [ProgresController::class, 'hapusFoto'])->name('proyek.hapusFoto');
 });
